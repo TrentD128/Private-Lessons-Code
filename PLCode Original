@@ -1,0 +1,35 @@
+import pandas as pd
+
+# Read the CSV file
+csv_file = r'C:\Users\TrentonDavis\Downloads\March12April1.csv'
+csv_df = pd.read_csv(csv_file)
+
+# Read the Excel file
+excel_file = r'C:\Users\TrentonDavis\Downloads\ProgramPackageRoster.xls'
+sheet_name = 'Redemption'
+excel_df = pd.read_excel(excel_file, sheet_name=sheet_name)
+
+# Convert date columns to datetime format
+csv_df['Date'] = pd.to_datetime(csv_df['Date'])
+excel_df['Redeemed on'] = pd.to_datetime(excel_df['Redeemed on'])
+
+# Merge dataframes on date columns
+merged_df = pd.merge(csv_df, excel_df, how='outer', left_on='Date', right_on='Redeemed on')
+
+# Check for missing dates in the CSV file
+missing_csv_dates = merged_df[pd.isnull(merged_df['Redeemed on'])]['Date']
+
+# Check for missing dates in the Excel file
+missing_excel_dates = merged_df[pd.isnull(merged_df['Date'])]['Redeemed on']
+
+# Check for dates that match in both files
+matching_dates = merged_df[pd.notnull(merged_df['Redeemed on'])]
+
+# Print the results
+print("Missing dates in CSV file:")
+print(missing_csv_dates.to_string(index=False))
+print("\nMissing dates in Excel file:")
+print(missing_excel_dates.to_string(index=False))
+print("\nMatching dates in both files:")
+print(matching_dates.to_string(index=False))
+
