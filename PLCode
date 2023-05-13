@@ -1,35 +1,27 @@
-import pandas as pd
-from termcolor import colored
+#!/system/bin/sh
 
-# Read the CSV file
-csv_file = r'C:\Users\TrentonDavis\Downloads\March12April1.csv'
-csv_df = pd.read_csv(csv_file)
+if [ $MAGISK_MODULE_STATUS = "0" ]; then
+    # Enable Google location accuracy
+    settings put secure location_mode 3
 
-# Read the Excel file
-excel_file = r'C:\Users\TrentonDavis\Downloads\ProgramPackageRoster.xls'
-sheet_name = 'redemption'
-excel_df = pd.read_excel(excel_file, sheet_name=sheet_name)
+    # Enable Wi-Fi scanning
+    settings put global wifi_scan_always_enabled 1
 
-# Convert date columns to datetime format
-csv_df['Date'] = pd.to_datetime(csv_df['Date'])
-excel_df['Redeemed on'] = pd.to_datetime(excel_df['Redeemed on'])
+    # Enable Bluetooth scanning
+    settings put global ble_scan_always_enabled 1
 
-# Merge dataframes on date columns
-merged_df = pd.merge(csv_df, excel_df, how='outer', left_on='Date', right_on='Redeemed on')
+    # Set mock location app to GPS Joystick
+    settings put secure mock_location_app "com.theappninjas.fakegpsjoystick"
+else
+    # Disable Google location accuracy
+    settings put secure location_mode 0
 
-# Check for missing dates in the CSV file
-missing_csv_dates = merged_df[pd.isnull(merged_df['Redeemed on'])][['Date', 'Name']]
+    # Disable Wi-Fi scanning
+    settings put global wifi_scan_always_enabled 0
 
-# Check for missing dates in the Excel file
-missing_excel_dates = merged_df[pd.isnull(merged_df['Date'])][['Redeemed on', 'Name']]
+    # Disable Bluetooth scanning
+    settings put global ble_scan_always_enabled 0
 
-# Check for dates that match in both files
-matching_dates = merged_df[pd.notnull(merged_df['Redeemed on']) & pd.notnull(merged_df['Date'])][['Date', 'Name']]
-
-# Print the results with colored text
-print(colored("Missing dates in CSV file:", 'red'))
-print(missing_csv_dates.to_string(index=False))
-print(colored("Missing dates in Excel file:", 'red'))
-print(missing_excel_dates.to_string(index=False))
-print(colored("Matching dates in both files:", 'green'))
-print(matching_dates.to_string(index=False))
+    # Clear mock location app setting
+    settings delete secure mock_location_app
+fi
